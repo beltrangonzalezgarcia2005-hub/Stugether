@@ -21,6 +21,9 @@ import NewListing from './pages/Dashboard/Owner/NewListing'
 import EditListing from './pages/Dashboard/Owner/EditListing'
 import Requests from './pages/Dashboard/Owner/Requests'
 import Verification from './pages/Dashboard/Owner/Verification'
+import StudentProfile from './pages/Dashboard/Student/Profile'
+import PublicProfile from './pages/Profile/index'
+import VerifyEmail from './pages/Auth/VerifyEmail'
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } })
 
@@ -35,6 +38,8 @@ export default function App() {
             <Route path="/registro" element={<Register />} />
             <Route path="/buscar" element={<Search />} />
             <Route path="/piso/:id" element={<PropertyDetail />} />
+            <Route path="/perfil/:id" element={<PublicProfile />} />
+            <Route path="/verificar-email" element={<VerifyEmail />} />
 
             <Route path="/panel" element={
               <ProtectedRoute><Dashboard /></ProtectedRoute>
@@ -50,6 +55,7 @@ export default function App() {
               <Route path="documentos"    element={<Documents />} />
               <Route path="verificacion"  element={<Verification />} />
               <Route path="configuracion" element={<Settings />} />
+              <Route path="perfil" element={<StudentProfile />} />
             </Route>
 
             {/* Legacy redirects */}

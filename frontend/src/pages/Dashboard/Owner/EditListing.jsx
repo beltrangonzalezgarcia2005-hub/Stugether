@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { getProperty, updateProperty, uploadPropertyImage } from '../../../api/properties'
+import client from '../../../api/client'
 import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 import Spinner from '../../../components/ui/Spinner'
@@ -89,6 +90,7 @@ export default function EditListing() {
   const update = useMutation({
     mutationFn: async (formData) => {
       await updateProperty(id, formData)
+      await client.put(`/properties/${id}/amenities/`, { keys: selectedAmenities })
       for (const { file } of newPhotos) {
         try { await uploadPropertyImage(id, file) } catch (_) { /* skip failed */ }
       }

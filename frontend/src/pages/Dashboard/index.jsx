@@ -14,6 +14,7 @@ const NAV = [
   { to:'/panel/documentos',    icon:'📄', label:'Documentos' },
   { to:'/panel/verificacion',  icon:'🪪', label:'Verificación' },
   { to:'/panel/configuracion', icon:'⚙️', label:'Configuración' },
+  { to:'/panel/perfil',        icon:'👤', label:'Mi Perfil' },
 ]
 
 export default function Dashboard() {

@@ -32,11 +32,15 @@ export function AuthProvider({ children }) {
   }
 
   const register = async (formData) => {
+    // Returns {detail: "..."} — no tokens yet, user must verify email first
     const { data } = await apiRegister(formData)
-    localStorage.setItem('access_token', data.access)
-    localStorage.setItem('refresh_token', data.refresh)
-    setUser(data.user)
-    return data.user
+    return data
+  }
+
+  const loginWithTokens = (access, refresh, userData) => {
+    localStorage.setItem('access_token', access)
+    localStorage.setItem('refresh_token', refresh)
+    setUser(userData)
   }
 
   const logout = () => {
@@ -46,7 +50,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, loginWithTokens, logout }}>
       {children}
     </AuthContext.Provider>
   )

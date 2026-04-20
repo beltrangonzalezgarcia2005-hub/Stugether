@@ -1,3 +1,4 @@
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -36,12 +37,26 @@ class CustomUser(AbstractUser):
 
 
 class StudentProfile(models.Model):
+    HABIT_NO_SMOKER   = 'NO_SMOKER'
+    HABIT_PET_FRIENDLY = 'PET_FRIENDLY'
+    HABIT_STUDIOUS    = 'STUDIOUS'
+    HABIT_SOCIAL      = 'SOCIAL'
+    HABIT_EARLY_RISER = 'EARLY_RISER'
+    HABIT_SPORTY      = 'SPORTY'
+    HABIT_TIDY        = 'TIDY'
+
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
     university = models.CharField(max_length=200, blank=True)
     degree = models.CharField(max_length=200, blank=True)
     enrollment_doc = models.FileField(upload_to='documents/enrollment/', null=True, blank=True)
     iban = models.CharField(max_length=34, blank=True)
     enrollment_verified = models.BooleanField(default=False)
+
+    age          = models.PositiveSmallIntegerField(null=True, blank=True)
+    course       = models.PositiveSmallIntegerField(null=True, blank=True)
+    city         = models.CharField(max_length=100, blank=True)
+    roommate_bio = models.TextField(blank=True)
+    habits       = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f'Estudiante: {self.user.get_full_name()}'
@@ -94,3 +109,12 @@ class Document(models.Model):
 
     def __str__(self):
         return f'{self.get_doc_type_display()} – {self.user.email}'
+
+
+class EmailVerificationToken(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='email_token')
+    token = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Token verificación: {self.user.email}'

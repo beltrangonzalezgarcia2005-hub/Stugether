@@ -1,6 +1,52 @@
+import re
 from rest_framework import serializers
 from .models import Conversation, Message
 from apps.users.serializers import UserSerializer
+
+PROFANITY = {
+    'puta', 'puto', 'putos', 'putas',
+    'coño', 'joder', 'hostia', 'hostias',
+    'mierda', 'mierdas',
+    'cabrón', 'cabron', 'cabrones',
+    'gilipollas',
+    'imbécil', 'imbecil',
+    'idiota', 'idiotas',
+    'maricón', 'maricon',
+    'capullo', 'capullos',
+    'pendejo', 'pendejos',
+    'zorra', 'zorras',
+    'follar',
+    'cojones',
+    'hijoputa', 'hijo de puta',
+    'polla', 'pollas',
+    'subnormal',
+    'chinga', 'chingada',
+}
+
+_WORD_RE = re.compile(r'\b\w+\b', re.IGNORECASE | re.UNICODE)
+
+
+def _contains_profanity(text):
+    words = {w.lower() for w in _WORD_RE.findall(text)}
+    # Normalise accents for comparison
+    normalised = {_strip_accents(w) for w in words}
+    for p in PROFANITY:
+        if _strip_accents(p) in normalised or p.lower() in words:
+            return True
+    # Also check for multi-word entries (e.g. "hijo de puta")
+    text_lower = _strip_accents(text.lower())
+    for p in PROFANITY:
+        if ' ' in p and _strip_accents(p) in text_lower:
+            return True
+    return False
+
+
+def _strip_accents(s):
+    return (s
+        .replace('á', 'a').replace('é', 'e').replace('í', 'i')
+        .replace('ó', 'o').replace('ú', 'u').replace('ü', 'u')
+        .replace('ñ', 'n').replace('Á', 'a').replace('É', 'e')
+        .replace('Í', 'i').replace('Ó', 'o').replace('Ú', 'u'))
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -10,6 +56,15 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['id', 'sender', 'sender_detail', 'body', 'is_read', 'created_at']
         read_only_fields = ['id', 'sender', 'is_read', 'created_at']
+
+    def validate_body(self, value):
+        if not value.strip():
+            raise serializers.ValidationError('El mensaje no puede estar vacío.')
+        if _contains_profanity(value):
+            raise serializers.ValidationError(
+                'Tu mensaje contiene lenguaje inapropiado. Por favor, revísalo antes de enviarlo.'
+            )
+        return value
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -30,12 +85,14 @@ class ConversationSerializer(serializers.ModelSerializer):
         return None
 
     def get_unread_count(self, obj):
-        user = self.context['request'].user
-        return obj.messages.filter(is_read=False).exclude(sender=user).count()
+        request = self.context.get('request')
+        if not request:
+            return 0
+        return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
 
     def get_other_participant(self, obj):
-        user = self.context['request'].user
-        other = obj.participants.exclude(id=user.id).first()
-        if other:
-            return UserSerializer(other).data
-        return None
+        request = self.context.get('request')
+        if not request:
+            return None
+        other = obj.participants.exclude(id=request.user.id).first()
+        return UserSerializer(other).data if other else None

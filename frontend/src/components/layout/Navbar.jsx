@@ -12,7 +12,7 @@ export default function Navbar() {
     navigate('/')
   }
 
-  const dashPath = '/panel'
+  const dashPath = '/panel/perfil'
 
   return (
     <nav style={{
@@ -37,24 +37,20 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+          {isAuthenticated && (
+            <Link to={dashPath} style={{
+              padding:'6px 14px', borderRadius:8, fontSize:14, fontWeight:500, textDecoration:'none',
+              color: location.pathname.startsWith('/panel') ? 'var(--blue)' : 'var(--muted)',
+              background: location.pathname.startsWith('/panel') ? 'var(--blue-light)' : 'transparent',
+            }}>
+              Perfil
+            </Link>
+          )}
         </div>
 
         <div style={{ display:'flex', alignItems:'center', gap:10, marginLeft:'auto' }}>
           {isAuthenticated ? (
-            <>
-              <Link to={dashPath}><Button variant="outline" size="sm">Mi panel</Button></Link>
-              <div style={{ fontSize:14, color:'var(--muted)', display:'flex', alignItems:'center', gap:8 }}>
-                <div style={{
-                  width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#60A5FA,#2563EB)',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  color:'white', fontWeight:700, fontSize:13, flexShrink:0,
-                }}>
-                  {user?.first_name?.[0]}{user?.last_name?.[0]}
-                </div>
-                <span style={{ fontWeight:500 }}>{user?.first_name}</span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>Salir</Button>
-            </>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>Salir</Button>
           ) : (
             <>
               <Link to="/login"><Button variant="outline" size="sm">Iniciar sesión</Button></Link>

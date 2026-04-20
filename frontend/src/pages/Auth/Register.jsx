@@ -34,7 +34,8 @@ export default function Register() {
     setServerError('')
     try {
       await authRegister(data)
-      navigate('/panel')
+      sessionStorage.setItem('pending_verify_email', data.email)
+      navigate('/verificar-email')
     } catch (err) {
       const d = err.response?.data
       setServerError(d?.email?.[0] || d?.detail || 'Error al registrarse. Inténtalo de nuevo.')

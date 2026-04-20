@@ -121,13 +121,21 @@ class OwnerPropertyListView(generics.ListAPIView):
 
 
 class PropertyAmenityView(generics.GenericAPIView):
-    """POST /api/properties/<pk>/amenities/ — Add amenity to property"""
+    """
+    POST /api/properties/<pk>/amenities/ — Add a single amenity.
+    PUT  /api/properties/<pk>/amenities/ — Replace all amenities atomically.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, pk=None):
+    def _get_property(self, pk):
         try:
-            prop = Property.objects.get(pk=pk, owner=request.user)
+            return Property.objects.get(pk=pk, owner=self.request.user)
         except Property.DoesNotExist:
+            return None
+
+    def post(self, request, pk=None):
+        prop = self._get_property(pk)
+        if prop is None:
             return Response({'detail': 'No encontrado o sin permiso.'}, status=status.HTTP_404_NOT_FOUND)
         key = request.data.get('key')
         if not key:
@@ -135,3 +143,14 @@ class PropertyAmenityView(generics.GenericAPIView):
         from .models import PropertyAmenity
         PropertyAmenity.objects.get_or_create(property=prop, key=key)
         return Response({'key': key}, status=status.HTTP_201_CREATED)
+
+    def put(self, request, pk=None):
+        prop = self._get_property(pk)
+        if prop is None:
+            return Response({'detail': 'No encontrado o sin permiso.'}, status=status.HTTP_404_NOT_FOUND)
+        keys = request.data.get('keys', [])
+        from .models import PropertyAmenity
+        prop.amenities.all().delete()
+        for key in keys:
+            PropertyAmenity.objects.create(property=prop, key=key)
+        return Response({'keys': keys})

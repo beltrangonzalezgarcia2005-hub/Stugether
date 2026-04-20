@@ -81,10 +81,12 @@ class PropertyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = [
+            'id',
             'title', 'description', 'address', 'city', 'neighborhood', 'lat', 'lng',
             'property_type', 'price_month', 'deposit', 'room_m2', 'total_m2',
             'companions', 'bathrooms', 'floor', 'elevator', 'pets_allowed', 'gender_pref',
         ]
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user

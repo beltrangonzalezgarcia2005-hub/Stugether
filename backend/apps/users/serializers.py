@@ -8,7 +8,17 @@ User = get_user_model()
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['university', 'degree', 'iban', 'enrollment_verified']
+        fields = ['university', 'degree', 'iban', 'enrollment_verified',
+                  'age', 'course', 'city', 'roommate_bio', 'habits']
+        read_only_fields = ['enrollment_verified']
+
+
+class PublicStudentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = ['university', 'degree', 'enrollment_verified',
+                  'age', 'course', 'city', 'roommate_bio', 'habits']
+        read_only_fields = fields
 
 
 class OwnerProfileSerializer(serializers.ModelSerializer):
@@ -21,9 +31,14 @@ class UserSerializer(serializers.ModelSerializer):
     student_profile = StudentProfileSerializer(read_only=True)
     owner_profile = OwnerProfileSerializer(read_only=True)
     full_name = serializers.SerializerMethodField()
-    # Writable profile fields (flattened for convenience)
-    university = serializers.CharField(required=False, allow_blank=True, write_only=True)
-    degree = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    # Writable flattened student-profile fields
+    university   = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    degree       = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    age          = serializers.IntegerField(required=False, allow_null=True, write_only=True)
+    course       = serializers.IntegerField(required=False, allow_null=True, write_only=True)
+    city         = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    roommate_bio = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    habits       = serializers.ListField(child=serializers.CharField(), required=False, write_only=True)
 
     class Meta:
         model = User
@@ -31,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'username', 'first_name', 'last_name', 'full_name',
             'role', 'avatar', 'phone', 'bio', 'is_verified', 'created_at',
             'student_profile', 'owner_profile',
-            'university', 'degree',
+            'university', 'degree', 'age', 'course', 'city', 'roommate_bio', 'habits',
         ]
         read_only_fields = ['id', 'is_verified', 'created_at', 'role']
 
@@ -39,17 +54,35 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
     def update(self, instance, validated_data):
-        university = validated_data.pop('university', None)
-        degree = validated_data.pop('degree', None)
+        profile_fields = ['university', 'degree', 'age', 'course', 'city', 'roommate_bio', 'habits']
+        profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
         instance = super().update(instance, validated_data)
-        if university is not None or degree is not None:
+        if profile_data:
             profile, _ = StudentProfile.objects.get_or_create(user=instance)
-            if university is not None:
-                profile.university = university
-            if degree is not None:
-                profile.degree = degree
+            for attr, val in profile_data.items():
+                setattr(profile, attr, val)
             profile.save()
         return instance
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    student_profile = PublicStudentProfileSerializer(read_only=True)
+    full_name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'full_name', 'avatar',
+                  'bio', 'is_verified', 'created_at', 'student_profile']
+
+    def get_full_name(self, obj):
+        return obj.get_full_name()
+
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.avatar:
+            return request.build_absolute_uri(obj.avatar.url) if request else obj.avatar.url
+        return None
 
 
 class RegisterSerializer(serializers.ModelSerializer):
