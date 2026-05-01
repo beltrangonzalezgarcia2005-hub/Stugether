@@ -5,8 +5,8 @@ import Spinner from '../../../components/ui/Spinner'
 import Button from '../../../components/ui/Button'
 
 const DOC_TYPES = [
-  { value:'DNI',        label:'DNI / Pasaporte',            icon:'🪪', desc:'Documento de identidad oficial' },
-  { value:'ENROLLMENT', label:'Matrícula universitaria',     icon:'🎓', desc:'Justificante de matrícula del curso actual' },
+  { value:'DNI',        label:'DNI / Pasaporte',            icon:'🪪', desc:'Documento de identidad oficial. Debes subir una foto del anverso y otra del reverso en un mismo documento.' },
+  { value:'ENROLLMENT', label:'Matrícula universitaria',     icon:'🎓', desc:'Justificante de matrícula del curso actual. Solo es necesario subir una foto del documento' },
   { value:'IBAN',       label:'IBAN domiciliación',          icon:'🏦', desc:'Número de cuenta para pagos automáticos' },
   { value:'PROPERTY_TITLE', label:'Título de propiedad',    icon:'🏠', desc:'Escritura o autorización del inmueble (para publicar pisos)' },
 ]
