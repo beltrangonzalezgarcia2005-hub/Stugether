@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import UserAvatar from '../ui/UserAvatar'
 
 export default function DashboardLayout({ children, navItems }) {
   const { user, logout } = useAuth()
@@ -14,12 +15,13 @@ export default function DashboardLayout({ children, navItems }) {
     <div style={{ display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'calc(100vh - 64px)' }}>
       <aside style={{ background:'var(--white)', borderRight:'1px solid var(--border)', padding:'24px 0', display:'flex', flexDirection:'column' }}>
         <div style={{ padding:'0 20px 20px', borderBottom:'1px solid var(--border)', marginBottom:16 }}>
-          <div style={{
-            width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#60A5FA,#2563EB)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:18, color:'white', fontWeight:700, marginBottom:10,
-          }}>
-            {user?.first_name?.[0]}{user?.last_name?.[0]}
+          <div style={{ marginBottom:10 }}>
+            <UserAvatar
+              src={user?.avatar}
+              name={`${user?.first_name || ''} ${user?.last_name || ''}`}
+              size={48}
+              userId={user?.id}
+            />
           </div>
           <div style={{ fontSize:15, fontWeight:700 }}>{user?.first_name} {user?.last_name}</div>
           <div style={{ fontSize:12, color:'var(--muted)', marginBottom:8 }}>

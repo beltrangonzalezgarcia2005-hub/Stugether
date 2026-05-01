@@ -13,6 +13,7 @@ import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import Spinner from '../../components/ui/Spinner'
 import Button from '../../components/ui/Button'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 // Fix leaflet default icon
 delete L.Icon.Default.prototype._getIconUrl
@@ -281,11 +282,16 @@ export default function PropertyDetail() {
             <div style={{ background:'var(--white)', borderRadius:'var(--radius)', boxShadow:'var(--shadow)', padding:24, marginBottom:20 }}>
               <div style={{ fontSize:16, fontWeight:700, marginBottom:14 }}>👤 Propietario</div>
               <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-                <div style={{ width:60, height:60, borderRadius:'50%', background:'linear-gradient(135deg,#60A5FA,#2563EB)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, color:'white', fontWeight:700, flexShrink:0 }}>
-                  {p.owner?.first_name?.[0]}{p.owner?.last_name?.[0]}
-                </div>
+                <UserAvatar
+                  src={p.owner?.avatar}
+                  name={p.owner?.full_name}
+                  size={60}
+                  userId={p.owner?.id}
+                />
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:16, fontWeight:700 }}>{p.owner?.full_name} {p.owner?.is_verified && <span style={{ fontSize:12, color:'var(--green)' }}>✓</span>}</div>
+                  <Link to={`/perfil/${p.owner?.id}`} style={{ textDecoration:'none', color:'inherit' }}>
+                    <div style={{ fontSize:16, fontWeight:700 }}>{p.owner?.full_name} {p.owner?.is_verified && <span style={{ fontSize:12, color:'var(--green)' }}>✓</span>}</div>
+                  </Link>
                   <div style={{ fontSize:13, color:'var(--muted)' }}>Propietario en Stugether</div>
                 </div>
                 <Button

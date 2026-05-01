@@ -1,8 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getUser } from '../../api/users'
+import { getUser, getUserPublicProperties } from '../../api/users'
+import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/layout/Navbar'
 import Spinner from '../../components/ui/Spinner'
+import PropertyCard from '../../components/features/PropertyCard'
 
 const HABITS = {
   NO_SMOKER:   { label: 'No fumador',  icon: '🚭' },
@@ -17,13 +19,21 @@ const HABITS = {
 export default function PublicProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user: authUser } = useAuth()
+  const isOwner = authUser && String(authUser.id) === String(id)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['user', id],
     queryFn: () => getUser(id),
   })
+  const { data: propsData } = useQuery({
+    queryKey: ['user-properties', id],
+    queryFn: () => getUserPublicProperties(id),
+    enabled: !!id,
+  })
   const user = data?.data
   const sp   = user?.student_profile
+  const userProperties = propsData?.data?.results || propsData?.data || []
 
   if (isLoading) return <><Navbar /><div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><Spinner /></div></>
   if (isError || !user) return (
@@ -58,9 +68,19 @@ export default function PublicProfile() {
                   ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <span style={{ fontSize: 24, fontWeight: 700, color: 'white' }}>{initials}</span>}
               </div>
-              {user.is_verified && (
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', background: 'var(--green-bg)', padding: '4px 10px', borderRadius: 20 }}>✓ Verificado</span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {user.is_verified && (
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', background: 'var(--green-bg)', padding: '4px 10px', borderRadius: 20 }}>✓ Verificado</span>
+                )}
+                {isOwner && (
+                  <button
+                    onClick={() => navigate('/panel/configuracion?tab=perfil')}
+                    style={{ fontSize: 13, fontWeight: 600, color: 'var(--blue)', background: 'var(--white)', border: '1.5px solid var(--blue)', borderRadius: 'var(--radius)', padding: '6px 14px', cursor: 'pointer' }}
+                  >
+                    Editar perfil
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ fontSize: 20, fontWeight: 800 }}>{user.first_name} {user.last_name}</div>
             {sp?.university && <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>🎓 {sp.university}</div>}
@@ -122,6 +142,17 @@ export default function PublicProfile() {
             </div>
           )}
         </div>
+
+        {userProperties.length > 0 && (
+          <div style={{ marginTop: 20, background: 'var(--white)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', padding: 28 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>🏠 Anuncios de este usuario</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+              {userProperties.map(property => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

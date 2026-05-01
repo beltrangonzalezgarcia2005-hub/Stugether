@@ -3,6 +3,8 @@ import { getReservations, updateReservationStatus } from '../../../api/reservati
 import { Link } from 'react-router-dom'
 import Spinner from '../../../components/ui/Spinner'
 import Button from '../../../components/ui/Button'
+import UserAvatar from '../../../components/ui/UserAvatar'
+import { useAuth } from '../../../contexts/AuthContext'
 
 const STATUS_LABELS = {
   PENDING:   { label:'Pendiente',   color:'var(--amber)',  bg:'var(--amber-bg)' },
@@ -13,6 +15,7 @@ const STATUS_LABELS = {
 }
 
 export default function Requests() {
+  const { user } = useAuth()
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({ queryKey:['reservations'], queryFn: getReservations })
   const reservations = data?.data?.results || []
@@ -50,9 +53,7 @@ export default function Requests() {
 
             {/* Student info */}
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-              <div style={{ width:28, height:28, borderRadius:'50%', background:'linear-gradient(135deg,#60A5FA,#2563EB)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'white', flexShrink:0 }}>
-                {student?.first_name?.[0]}
-              </div>
+              <UserAvatar src={student?.avatar} name={student?.full_name} size={28} />
               <span style={{ fontSize:13, fontWeight:600 }}>{student?.full_name}</span>
               {student?.is_verified && <span style={{ fontSize:11, color:'var(--green)', fontWeight:600 }}>✓ Verificado</span>}
             </div>
@@ -64,7 +65,7 @@ export default function Requests() {
               <span>Total: <strong style={{ color:'var(--text)' }}>{r.total}€</strong></span>
             </div>
 
-            {r.status === 'PENDING' && (
+            {r.status === 'PENDING' && user?.role === 'OWNER' && (
               <div style={{ display:'flex', gap:8 }}>
                 <Button
                   variant="primary" size="sm"

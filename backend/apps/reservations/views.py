@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django.utils import timezone
 from .models import Reservation
@@ -69,6 +70,9 @@ class ReservationDetailView(generics.RetrieveUpdateAPIView):
         return Reservation.objects.filter(student=user)
 
     def perform_update(self, serializer):
+        reservation = self.get_object()
+        if reservation.property.owner != self.request.user:
+            raise PermissionDenied("Solo el propietario puede aceptar o rechazar solicitudes.")
         new_status = serializer.validated_data.get('status')
         kwargs = {}
         if new_status == Reservation.STATUS_ACCEPTED:

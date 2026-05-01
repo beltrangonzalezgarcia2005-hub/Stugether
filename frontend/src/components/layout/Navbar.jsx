@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
+import UserAvatar from '../ui/UserAvatar'
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -39,11 +40,17 @@ export default function Navbar() {
           ))}
           {isAuthenticated && (
             <Link to={dashPath} style={{
-              padding:'6px 14px', borderRadius:8, fontSize:14, fontWeight:500, textDecoration:'none',
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding:'4px 12px 4px 6px', borderRadius: 20, fontSize:14, fontWeight:500, textDecoration:'none',
               color: location.pathname.startsWith('/panel') ? 'var(--blue)' : 'var(--muted)',
               background: location.pathname.startsWith('/panel') ? 'var(--blue-light)' : 'transparent',
             }}>
-              Perfil
+              <UserAvatar
+                src={user?.avatar}
+                name={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                size={28}
+              />
+              {user?.first_name || 'Perfil'}
             </Link>
           )}
         </div>

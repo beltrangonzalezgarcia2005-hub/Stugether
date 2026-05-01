@@ -1,7 +1,7 @@
 import re
 from rest_framework import serializers
 from .models import Conversation, Message
-from apps.users.serializers import UserSerializer
+from apps.users.serializers import PublicUserSerializer
 
 PROFANITY = {
     'puta', 'puto', 'putos', 'putas',
@@ -50,7 +50,7 @@ def _strip_accents(s):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender_detail = UserSerializer(source='sender', read_only=True)
+    sender_detail = PublicUserSerializer(source='sender', read_only=True)
 
     class Meta:
         model = Message
@@ -68,7 +68,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class ConversationSerializer(serializers.ModelSerializer):
-    participants = UserSerializer(many=True, read_only=True)
+    participants = PublicUserSerializer(many=True, read_only=True)
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
     other_participant = serializers.SerializerMethodField()
@@ -95,4 +95,4 @@ class ConversationSerializer(serializers.ModelSerializer):
         if not request:
             return None
         other = obj.participants.exclude(id=request.user.id).first()
-        return UserSerializer(other).data if other else None
+        return PublicUserSerializer(other).data if other else None

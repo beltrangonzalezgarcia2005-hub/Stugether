@@ -4,6 +4,7 @@ import { getConversations, getMessages, sendMessage } from '../../../api/message
 import { useAuth } from '../../../contexts/AuthContext'
 import Spinner from '../../../components/ui/Spinner'
 import Button from '../../../components/ui/Button'
+import UserAvatar from '../../../components/ui/UserAvatar'
 
 export default function Messages() {
   const { user } = useAuth()
@@ -71,7 +72,6 @@ export default function Messages() {
             </div>
           ) : conversations.map(conv => {
             const other = conv.other_participant
-            const initials = `${other?.first_name?.[0] || ''}${other?.last_name?.[0] || ''}` || '?'
             const isActive = activeConv === conv.id
             return (
               <div key={conv.id} onClick={() => setActiveConv(conv.id)} style={{
@@ -80,9 +80,12 @@ export default function Messages() {
                 borderBottom: '1px solid var(--border)',
                 transition: 'background .1s',
               }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#60A5FA,#2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                  {initials}
-                </div>
+                <UserAvatar
+                  src={other?.avatar}
+                  name={other?.full_name}
+                  size={40}
+                  userId={other?.id}
+                />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: conv.unread_count > 0 ? 700 : 600 }}>
                     {other?.full_name || 'Usuario'}
@@ -106,9 +109,12 @@ export default function Messages() {
           <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {/* Header */}
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#60A5FA,#2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 13 }}>
-                {activeConvData?.other_participant?.first_name?.[0] || '?'}
-              </div>
+              <UserAvatar
+                src={activeConvData?.other_participant?.avatar}
+                name={activeConvData?.other_participant?.full_name}
+                size={36}
+                userId={activeConvData?.other_participant?.id}
+              />
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700 }}>{activeConvData?.other_participant?.full_name || 'Usuario'}</div>
                 {activeConvData?.related_property && (

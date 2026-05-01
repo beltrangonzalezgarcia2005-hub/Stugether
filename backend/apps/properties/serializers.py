@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Property, PropertyImage, PropertyAmenity, PropertyUniversity, University, Favorite
-from apps.users.serializers import UserSerializer
+from apps.users.serializers import UserSerializer, PublicUserSerializer
 
 
 class UniversitySerializer(serializers.ModelSerializer):
@@ -70,7 +70,7 @@ class PropertyListSerializer(serializers.ModelSerializer):
 
 
 class PropertyDetailSerializer(PropertyListSerializer):
-    owner = UserSerializer(read_only=True)
+    owner = PublicUserSerializer(read_only=True)
     description = serializers.CharField()
 
     class Meta(PropertyListSerializer.Meta):

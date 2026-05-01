@@ -9,7 +9,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
         fields = ['university', 'degree', 'iban', 'enrollment_verified',
-                  'age', 'course', 'city', 'roommate_bio', 'habits']
+                  'age', 'course', 'city', 'roommate_bio', 'habits', 'profile_public']
         read_only_fields = ['enrollment_verified']
 
 
@@ -39,14 +39,17 @@ class UserSerializer(serializers.ModelSerializer):
     city         = serializers.CharField(required=False, allow_blank=True, write_only=True)
     roommate_bio = serializers.CharField(required=False, allow_blank=True, write_only=True)
     habits       = serializers.ListField(child=serializers.CharField(), required=False, write_only=True)
+    profile_public = serializers.BooleanField(required=False, write_only=True)
 
     class Meta:
         model = User
         fields = [
             'id', 'email', 'username', 'first_name', 'last_name', 'full_name',
             'role', 'avatar', 'phone', 'bio', 'is_verified', 'created_at',
+            'notification_preferences',
             'student_profile', 'owner_profile',
             'university', 'degree', 'age', 'course', 'city', 'roommate_bio', 'habits',
+            'profile_public',
         ]
         read_only_fields = ['id', 'is_verified', 'created_at', 'role']
 
@@ -54,7 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
     def update(self, instance, validated_data):
-        profile_fields = ['university', 'degree', 'age', 'course', 'city', 'roommate_bio', 'habits']
+        profile_fields = ['university', 'degree', 'age', 'course', 'city', 'roommate_bio', 'habits', 'profile_public']
         profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
         instance = super().update(instance, validated_data)
         if profile_data:

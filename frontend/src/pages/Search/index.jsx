@@ -9,6 +9,7 @@ import Navbar from '../../components/layout/Navbar'
 import PropertyCard from '../../components/features/PropertyCard'
 import Spinner from '../../components/ui/Spinner'
 import Button from '../../components/ui/Button'
+import UniversitySelector from '../../components/ui/UniversitySelector'
 
 // Fix leaflet default icon
 delete L.Icon.Default.prototype._getIconUrl
@@ -58,16 +59,13 @@ export default function Search() {
       {/* Top search bar */}
       <div style={{ background:'var(--white)', borderBottom:'1px solid var(--border)', padding:'16px 0' }}>
         <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px', display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ flex:1, display:'flex', alignItems:'center', gap:10, background:'var(--bg)', border:'1.5px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 16px', maxWidth:360 }}>
-            <span>🔍</span>
-            <input
-              value={filters.university}
-              onChange={e => setFilter('university', e.target.value)}
-              placeholder="Universidad o ciudad…"
-              style={{ border:'none', background:'none', outline:'none', flex:1, fontSize:14 }}
-              onKeyDown={e => e.key === 'Enter' && refetch()}
-            />
-          </div>
+          <UniversitySelector
+            label=""
+            placeholder="Universidad o ciudad…"
+            value={filters.university}
+            onChange={val => setFilter('university', val)}
+            containerStyle={{ marginBottom: 0, flex: 1, maxWidth: 360 }}
+          />
           <select
             value={filters.ordering}
             onChange={e => setFilter('ordering', e.target.value)}

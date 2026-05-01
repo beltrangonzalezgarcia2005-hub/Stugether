@@ -126,13 +126,53 @@ class PublicUserProfileView(generics.RetrieveAPIView):
     serializer_class = PublicUserSerializer
     permission_classes = [permissions.AllowAny]
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        sp = getattr(instance, 'student_profile', None)
+        if sp and not sp.profile_public:
+            if not request.user.is_authenticated or request.user.pk != instance.pk:
+                return Response({'detail': 'Este perfil es privado.'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-class MeView(generics.RetrieveUpdateAPIView):
+
+class MeView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save(update_fields=['is_active'])
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        current_password = request.data.get('current_password', '')
+        new_password = request.data.get('new_password', '')
+        confirm_new_password = request.data.get('confirm_new_password', '')
+
+        errors = {}
+        if not user.check_password(current_password):
+            errors['current_password'] = ['La contraseña actual no es correcta.']
+        if len(new_password) < 8:
+            errors['new_password'] = ['La nueva contraseña debe tener al menos 8 caracteres.']
+        if new_password and new_password == current_password:
+            errors['new_password'] = ['La nueva contraseña debe ser diferente a la actual.']
+        if new_password != confirm_new_password:
+            errors['confirm_new_password'] = ['Las contraseñas no coinciden.']
+
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+        return Response({'detail': 'Contraseña actualizada correctamente.'}, status=status.HTTP_200_OK)
 
 
 class DocumentListCreateView(generics.ListCreateAPIView):
@@ -154,3 +194,28 @@ class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Document.objects.filter(user=self.request.user)
+
+
+class UserPublicPropertiesView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        from apps.properties.models import Property
+        user_pk = self.kwargs['pk']
+        try:
+            target = User.objects.get(pk=user_pk, is_active=True)
+        except User.DoesNotExist:
+            return Property.objects.none()
+        sp = getattr(target, 'student_profile', None)
+        if sp and not sp.profile_public:
+            if not self.request.user.is_authenticated or self.request.user.pk != target.pk:
+                return Property.objects.none()
+        return (
+            Property.objects.filter(owner=target, is_active=True)
+            .prefetch_related('images', 'amenities', 'propertyuniversity_set__university', 'favorited_by')
+            .order_by('-created_at')
+        )
+
+    def get_serializer_class(self):
+        from apps.properties.serializers import PropertyListSerializer
+        return PropertyListSerializer

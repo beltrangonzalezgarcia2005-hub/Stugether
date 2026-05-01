@@ -8,6 +8,7 @@ import Footer from '../../components/layout/Footer'
 import PropertyCard from '../../components/features/PropertyCard'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
+import UniversitySelector from '../../components/ui/UniversitySelector'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -49,11 +50,14 @@ export default function Home() {
           <form onSubmit={handleSearch} style={{ background:'white', borderRadius:14, padding:8, display:'flex', alignItems:'center', gap:8, maxWidth:720, margin:'0 auto', boxShadow:'var(--shadow-lg)' }}>
             <div style={{ flex:1, padding:'8px 16px' }}>
               <div style={{ fontSize:11, fontWeight:700, color:'var(--muted)', textTransform:'uppercase', letterSpacing:.5, marginBottom:2 }}>Universidad</div>
-              <input
-                value={search.university}
-                onChange={e => setSearch(s => ({ ...s, university: e.target.value }))}
+              <UniversitySelector
+                label=""
                 placeholder="Ej. Universidad Complutense"
-                style={{ border:'none', outline:'none', fontSize:15, fontWeight:500, width:'100%', color:'var(--text)' }}
+                value={search.university}
+                onChange={val => setSearch(s => ({ ...s, university: val }))}
+                containerStyle={{ marginBottom: 0 }}
+                inputStyle={{ border: 'none', outline: 'none', padding: '0', fontSize: 15, fontWeight: 500, color: 'var(--text)', borderRadius: 0 }}
+                hideIcon
               />
             </div>
             <div style={{ width:1, height:40, background:'var(--border)' }} />

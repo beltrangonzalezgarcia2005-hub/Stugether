@@ -61,6 +61,12 @@ class UniversityListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     filter_backends = [SearchFilter]
     search_fields = ['name', 'city']
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):  # noqa: ARG002
+        qs = self.filter_queryset(self.get_queryset())[:20]
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
 
 class FavoriteListCreateView(generics.ListCreateAPIView):

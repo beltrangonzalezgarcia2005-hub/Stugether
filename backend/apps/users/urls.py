@@ -3,6 +3,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     RegisterView, MeView, DocumentListCreateView, DocumentDetailView,
     PublicUserProfileView, VerifyEmailView, ResendVerificationView,
+    ChangePasswordView, UserPublicPropertiesView,
 )
 
 urlpatterns = [
@@ -15,4 +16,6 @@ urlpatterns = [
     path('documents/', DocumentListCreateView.as_view(), name='document-list'),
     path('documents/<int:pk>/', DocumentDetailView.as_view(), name='document-detail'),
     path('users/<int:pk>/', PublicUserProfileView.as_view(), name='user-public-profile'),
+    path('users/<int:pk>/properties/', UserPublicPropertiesView.as_view(), name='user-public-properties'),
+    path('change-password/', ChangePasswordView.as_view(), name='auth-change-password'),
 ]

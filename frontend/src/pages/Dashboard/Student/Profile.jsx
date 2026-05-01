@@ -4,6 +4,7 @@ import { getMe, updateMe } from '../../../api/auth'
 import client from '../../../api/client'
 import Button from '../../../components/ui/Button'
 import Spinner from '../../../components/ui/Spinner'
+import UniversitySelector from '../../../components/ui/UniversitySelector'
 
 const HABITS = [
   { key: 'NO_SMOKER',   label: 'No fumador',   icon: '🚭' },
@@ -208,7 +209,12 @@ export default function Profile() {
                 <div><label style={labelStyle}>Edad</label><input style={inputStyle} type="number" value={form.age} onChange={e => setForm(f => ({ ...f, age: e.target.value }))} /></div>
                 <div><label style={labelStyle}>Curso</label><input style={inputStyle} type="number" min="1" max="6" value={form.course} onChange={e => setForm(f => ({ ...f, course: e.target.value }))} /></div>
                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Grado / Carrera</label><input style={inputStyle} value={form.degree} onChange={e => setForm(f => ({ ...f, degree: e.target.value }))} /></div>
-                <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Universidad</label><input style={inputStyle} value={form.university} onChange={e => setForm(f => ({ ...f, university: e.target.value }))} /></div>
+                <div style={{ gridColumn: '1/-1' }}>
+                  <UniversitySelector
+                    value={form.university}
+                    onChange={val => setForm(f => ({ ...f, university: val }))}
+                  />
+                </div>
                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Ciudad</label><input style={inputStyle} value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Teléfono</label><input style={inputStyle} value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
               </div>
