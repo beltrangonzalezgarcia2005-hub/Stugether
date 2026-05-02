@@ -1,13 +1,27 @@
+import math
+import unicodedata
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Property, University, Favorite
+from .models import Property, University, Campus, Favorite
 from .serializers import (
     PropertyListSerializer, PropertyDetailSerializer,
     PropertyCreateSerializer, UniversitySerializer, FavoriteSerializer
 )
 from .filters import PropertyFilter
+
+CAMPUS_RADIUS_KM = 3
+UNIVERSITY_RADIUS_KM = 5
+
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -44,6 +58,52 @@ class PropertyListCreateView(generics.ListCreateAPIView):
             qs = qs.filter(is_featured=True)
         return qs
 
+    def filter_queryset(self, queryset):
+        campus_id = self.request.query_params.get('campus')
+        university_name = self.request.query_params.get('university')
+
+        if campus_id:
+            try:
+                campus = Campus.objects.get(id=campus_id)
+                if campus.lat and campus.lng:
+                    ids = [
+                        p.id for p in queryset
+                        if p.lat and p.lng
+                        and _haversine_km(p.lat, p.lng, campus.lat, campus.lng) <= CAMPUS_RADIUS_KM
+                    ]
+                    queryset = queryset.filter(id__in=ids)
+            except Campus.DoesNotExist:
+                pass
+            university_name = None
+
+        if university_name:
+            needle = _strip_accents(university_name)
+            unis = [u for u in University.objects.prefetch_related('campuses').all()
+                    if needle in _strip_accents(u.name)]
+            campus_points = [
+                (c.lat, c.lng)
+                for u in unis
+                for c in u.campuses.all()
+                if c.lat and c.lng
+            ]
+            if campus_points:
+                ids = [
+                    p.id for p in queryset
+                    if p.lat and p.lng
+                    and any(
+                        _haversine_km(p.lat, p.lng, clat, clng) <= UNIVERSITY_RADIUS_KM
+                        for clat, clng in campus_points
+                    )
+                ]
+                queryset = queryset.filter(id__in=ids)
+
+        mutable = self.request.query_params.copy()
+        mutable.pop('campus', None)
+        mutable.pop('university', None)
+        self.request._request.GET = mutable
+
+        return super().filter_queryset(queryset)
+
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Property.objects.filter(is_active=True)
@@ -55,17 +115,24 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         return PropertyDetailSerializer
 
 
+def _strip_accents(text):
+    return unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('ascii').lower()
+
+
 class UniversityListView(generics.ListAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
     permission_classes = [permissions.AllowAny]
-    filter_backends = [SearchFilter]
-    search_fields = ['name', 'city']
     pagination_class = None
 
-    def list(self, request, *args, **kwargs):  # noqa: ARG002
-        qs = self.filter_queryset(self.get_queryset())[:20]
-        serializer = self.get_serializer(qs, many=True)
+    def list(self, request, *args, **kwargs):
+        search = request.query_params.get('search', '').strip()
+        if not search:
+            return Response([])
+        needle = _strip_accents(search)
+        qs = University.objects.prefetch_related('campuses').all()
+        results = [u for u in qs if needle in _strip_accents(u.name) or needle in _strip_accents(u.city or '')]
+        serializer = self.get_serializer(results[:20], many=True)
         return Response(serializer.data)
 
 

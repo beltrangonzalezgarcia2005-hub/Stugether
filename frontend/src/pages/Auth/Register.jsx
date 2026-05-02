@@ -33,8 +33,12 @@ export default function Register() {
   const onSubmit = async (data) => {
     setIsLoading(true)
     setServerError('')
+    const payload = { ...data }
+    if (typeof payload.university === 'object' && payload.university !== null) {
+      payload.university = payload.university.universityName || ''
+    }
     try {
-      await authRegister(data)
+      await authRegister(payload)
       sessionStorage.setItem('pending_verify_email', data.email)
       navigate('/verificar-email')
     } catch (err) {

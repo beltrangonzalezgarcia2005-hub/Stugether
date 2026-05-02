@@ -1,12 +1,20 @@
 from rest_framework import serializers
-from .models import Property, PropertyImage, PropertyAmenity, PropertyUniversity, University, Favorite
+from .models import Property, PropertyImage, PropertyAmenity, PropertyUniversity, University, Campus, Favorite
 from apps.users.serializers import UserSerializer, PublicUserSerializer
 
 
+class CampusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campus
+        fields = ['id', 'name', 'city', 'lat', 'lng']
+
+
 class UniversitySerializer(serializers.ModelSerializer):
+    campuses = CampusSerializer(many=True, read_only=True)
+
     class Meta:
         model = University
-        fields = ['id', 'name', 'city', 'lat', 'lng']
+        fields = ['id', 'name', 'city', 'campuses']
 
 
 class PropertyImageSerializer(serializers.ModelSerializer):

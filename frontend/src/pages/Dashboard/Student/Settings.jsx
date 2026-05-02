@@ -149,17 +149,23 @@ function PerfilTab() {
         <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
           Añade dónde estudias para que los propietarios puedan conocerte mejor.
         </p>
-        <form onSubmit={submitAcademic(d => updateAcademic.mutate(d))}>
+        <form onSubmit={submitAcademic(d => {
+          const payload = { ...d }
+          if (typeof payload.university === 'object' && payload.university !== null) {
+            payload.university = payload.university.universityName || ''
+          }
+          updateAcademic.mutate(payload)
+        })}>
           <Controller
-                  name="university"
-                  control={controlAcademic}
-                  render={({ field }) => (
-                    <UniversitySelector
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
+            name="university"
+            control={controlAcademic}
+            render={({ field }) => (
+              <UniversitySelector
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
           <Input label="Carrera"     placeholder="Ej. Ingeniería Informática"             {...regAcademic('degree')} />
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Button type="submit" variant="outline" disabled={updateAcademic.isPending}>

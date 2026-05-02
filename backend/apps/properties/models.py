@@ -128,9 +128,25 @@ class PropertyAmenity(models.Model):
         return f'{self.get_key_display()} – {self.property.title}'
 
 
+class Campus(models.Model):
+    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='campuses')
+    name = models.CharField(max_length=200)
+    city = models.CharField(max_length=100, blank=True)
+    lat = models.FloatField(null=True, blank=True)
+    lng = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['university__name', 'name']
+        verbose_name_plural = 'Campuses'
+
+    def __str__(self):
+        return f'{self.university.name} — {self.name}'
+
+
 class PropertyUniversity(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     university = models.ForeignKey(University, on_delete=models.CASCADE)
+    campus = models.ForeignKey('Campus', null=True, blank=True, on_delete=models.SET_NULL)
     minutes_walk = models.PositiveSmallIntegerField(null=True, blank=True)
     minutes_transit = models.PositiveSmallIntegerField(null=True, blank=True)
 

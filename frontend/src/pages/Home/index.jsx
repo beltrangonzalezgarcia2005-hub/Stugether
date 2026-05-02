@@ -13,7 +13,8 @@ import UniversitySelector from '../../components/ui/UniversitySelector'
 export default function Home() {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const [search, setSearch] = useState({ university: '', city: '' })
+  const [search, setSearch] = useState({ university: '', campus: '', city: '' })
+  const [uniSelection, setUniSelection] = useState('')
 
   const { data: featuredData, isLoading } = useQuery({
     queryKey: ['properties', 'featured'],
@@ -25,6 +26,7 @@ export default function Home() {
     e.preventDefault()
     const params = new URLSearchParams()
     if (search.university) params.set('university', search.university)
+    if (search.campus) params.set('campus', search.campus)
     if (search.city) params.set('city', search.city)
     navigate(`/buscar?${params.toString()}`)
   }
@@ -53,8 +55,13 @@ export default function Home() {
               <UniversitySelector
                 label=""
                 placeholder="Ej. Universidad Complutense"
-                value={search.university}
-                onChange={val => setSearch(s => ({ ...s, university: val }))}
+                value={uniSelection}
+                onChange={sel => {
+                  setUniSelection(sel)
+                  const name = typeof sel === 'object' && sel ? sel.universityName : sel
+                  const campusId = typeof sel === 'object' && sel ? (sel.campusId || '') : ''
+                  setSearch(s => ({ ...s, university: name || '', campus: campusId }))
+                }}
                 containerStyle={{ marginBottom: 0 }}
                 inputStyle={{ border: 'none', outline: 'none', padding: '0', fontSize: 15, fontWeight: 500, color: 'var(--text)', borderRadius: 0 }}
                 hideIcon

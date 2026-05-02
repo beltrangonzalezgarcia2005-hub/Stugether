@@ -30,6 +30,7 @@ export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState({
     university: searchParams.get('university') || '',
+    campus: searchParams.get('campus') || '',
     city: searchParams.get('city') || '',
     min_price: '',
     max_price: '',
@@ -40,6 +41,10 @@ export default function Search() {
     ordering: '-created_at',
     page: 1,
   })
+  // holds the full selector value object for UniversitySelector
+  const [uniSelection, setUniSelection] = useState(
+    searchParams.get('university') ? { universityName: searchParams.get('university'), campusId: searchParams.get('campus') || null, campusName: null } : ''
+  )
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['properties', filters],
@@ -62,8 +67,13 @@ export default function Search() {
           <UniversitySelector
             label=""
             placeholder="Universidad o ciudad…"
-            value={filters.university}
-            onChange={val => setFilter('university', val)}
+            value={uniSelection}
+            onChange={sel => {
+              setUniSelection(sel)
+              const name = typeof sel === 'object' && sel ? sel.universityName : sel
+              const campusId = typeof sel === 'object' && sel ? (sel.campusId || '') : ''
+              setFilters(f => ({ ...f, university: name || '', campus: campusId, page: 1 }))
+            }}
             containerStyle={{ marginBottom: 0, flex: 1, maxWidth: 360 }}
           />
           <select

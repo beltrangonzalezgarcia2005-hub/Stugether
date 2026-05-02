@@ -11,9 +11,6 @@ class PropertyFilter(django_filters.FilterSet):
     pets_allowed = django_filters.BooleanFilter()
     is_verified = django_filters.BooleanFilter()
     city = django_filters.CharFilter(lookup_expr='icontains')
-    university = django_filters.CharFilter(
-        field_name='universities__name', lookup_expr='icontains'
-    )
     amenity = django_filters.CharFilter(method='filter_amenity')
 
     class Meta:

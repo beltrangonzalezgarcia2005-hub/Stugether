@@ -122,6 +122,9 @@ export default function Profile() {
     const payload = { ...form }
     if (!payload.age) payload.age = null
     if (!payload.course) payload.course = null
+    if (typeof payload.university === 'object' && payload.university !== null) {
+      payload.university = payload.university.universityName || ''
+    }
     save.mutate(payload)
   }
 
@@ -215,6 +218,7 @@ export default function Profile() {
                     onChange={val => setForm(f => ({ ...f, university: val }))}
                   />
                 </div>
+
                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Ciudad</label><input style={inputStyle} value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Teléfono</label><input style={inputStyle} value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
               </div>
