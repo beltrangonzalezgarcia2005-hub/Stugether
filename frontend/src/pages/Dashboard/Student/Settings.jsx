@@ -326,17 +326,20 @@ function NotificacionesTab() {
     ...(user?.notification_preferences || {}),
   }
   const [prefs, setPrefs] = useState(defaults)
+  const [saved, setSaved] = useState(false)
 
   const update = useMutation({
     mutationFn: updateMe,
-    onSuccess: () => qc.invalidateQueries(['me']),
+    onSuccess: () => {
+      qc.invalidateQueries(['me'])
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    },
   })
 
-  const toggle = (key) => {
-    const next = { ...prefs, [key]: !prefs[key] }
-    setPrefs(next)
-    update.mutate({ notification_preferences: next })
-  }
+  const toggle = (key) => setPrefs(prev => ({ ...prev, [key]: !prev[key] }))
+
+  const handleSave = () => update.mutate({ notification_preferences: prefs })
 
   return (
     <div style={{ maxWidth: 600 }}>
@@ -367,6 +370,16 @@ function NotificacionesTab() {
             />
           </div>
         ))}
+        <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Button onClick={handleSave} disabled={update.isPending}>
+            {update.isPending ? 'Guardando…' : 'Guardar cambios'}
+          </Button>
+          {saved && (
+            <span style={{ fontSize: 13, color: 'var(--success, #16a34a)' }}>
+              ✓ Preferencias guardadas
+            </span>
+          )}
+        </div>
       </Card>
     </div>
   )

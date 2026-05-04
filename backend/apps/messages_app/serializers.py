@@ -4,7 +4,7 @@ from .models import Conversation, Message
 from apps.users.serializers import PublicUserSerializer
 
 PROFANITY = {
-    'puta', 'puto', 'putos', 'putas',
+    'puta', 'puto', 'putos', 'putas', 'put4', 'pvt4', 'pvt0', 'pvtos', 'pvtas',
     'coño', 'joder', 'hostia', 'hostias',
     'mierda', 'mierdas',
     'cabrón', 'cabron', 'cabrones',

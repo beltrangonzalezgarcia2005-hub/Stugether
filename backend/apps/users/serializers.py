@@ -115,6 +115,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         user = User(**validated_data)
         user.set_password(password)
+        user.is_active = False
         user.save()
 
         StudentProfile.objects.create(user=user, university=university)
@@ -127,3 +128,15 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = ['id', 'doc_type', 'file', 'status', 'uploaded_at', 'reviewed_at', 'rejection_reason']
         read_only_fields = ['id', 'status', 'uploaded_at', 'reviewed_at', 'rejection_reason']
+
+    _STUDENT_ALLOWED = {'DNI', 'ENROLLMENT', 'IBAN', 'CONTRACT'}
+    _OWNER_ALLOWED   = {'DNI', 'PROPERTY_TITLE'}
+
+    def validate(self, data):
+        user = self.context['request'].user
+        doc_type = data.get('doc_type')
+        if doc_type and user.role == 'STUDENT' and doc_type not in self._STUDENT_ALLOWED:
+            raise serializers.ValidationError({'doc_type': 'Los estudiantes no pueden subir este tipo de documento.'})
+        if doc_type and user.role == 'OWNER' and doc_type not in self._OWNER_ALLOWED:
+            raise serializers.ValidationError({'doc_type': 'Los propietarios no pueden subir este tipo de documento.'})
+        return data

@@ -8,7 +8,7 @@ const DOC_TYPES = [
   { value:'DNI',        label:'DNI / Pasaporte',            icon:'🪪', desc:'Documento de identidad oficial. Debes subir una foto del anverso y otra del reverso en un mismo documento.' },
   { value:'ENROLLMENT', label:'Matrícula universitaria',     icon:'🎓', desc:'Justificante de matrícula del curso actual. Solo es necesario subir una foto del documento' },
   { value:'IBAN',       label:'IBAN domiciliación',          icon:'🏦', desc:'Número de cuenta para pagos automáticos' },
-  { value:'PROPERTY_TITLE', label:'Título de propiedad',    icon:'🏠', desc:'Escritura o autorización del inmueble (para publicar pisos)' },
+  { value:'CONTRACT', label:'Contrato de arrendamiento', icon:'📄', desc:'Contrato de alquiler del piso que quieres compartir. Acredita que eres el inquilino principal.' },
 ]
 
 const STATUS = {
@@ -111,7 +111,9 @@ export default function Documents() {
 
   if (isLoading) return <Spinner />
 
-  const approvedCount = docs.filter(d => d.status === 'APPROVED').length
+  const approvedCount = DOC_TYPES.filter(({ value }) =>
+    docs.some(d => d.doc_type === value && d.status === 'APPROVED')
+  ).length
   const total = DOC_TYPES.length
   const pct = Math.round(approvedCount / total * 100)
 

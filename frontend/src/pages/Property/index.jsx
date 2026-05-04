@@ -14,6 +14,7 @@ import Footer from '../../components/layout/Footer'
 import Spinner from '../../components/ui/Spinner'
 import Button from '../../components/ui/Button'
 import UserAvatar from '../../components/ui/UserAvatar'
+import RequiresVerification from '../../components/ui/RequiresVerification'
 
 // Fix leaflet default icon
 delete L.Icon.Default.prototype._getIconUrl
@@ -294,16 +295,18 @@ export default function PropertyDetail() {
                   </Link>
                   <div style={{ fontSize:13, color:'var(--muted)' }}>Propietario en Stugether</div>
                 </div>
-                <Button
-                  variant="outline"
-                  disabled={contactOwner.isPending || !isAuthenticated}
-                  onClick={() => isAuthenticated
-                    ? contactOwner.mutate({ ownerId: p.owner?.id, propertyId: p.id })
-                    : navigate('/login')
-                  }
-                >
-                  {contactOwner.isPending ? '…' : isAuthenticated ? 'Contactar' : 'Inicia sesión'}
-                </Button>
+                <RequiresVerification message="Para contactar con el propietario necesitas verificar tu email.">
+                  <Button
+                    variant="outline"
+                    disabled={contactOwner.isPending || !isAuthenticated}
+                    onClick={() => isAuthenticated
+                      ? contactOwner.mutate({ ownerId: p.owner?.id, propertyId: p.id })
+                      : navigate('/login')
+                    }
+                  >
+                    {contactOwner.isPending ? '…' : isAuthenticated ? 'Contactar' : 'Inicia sesión'}
+                  </Button>
+                </RequiresVerification>
               </div>
             </div>
 
@@ -388,12 +391,14 @@ export default function PropertyDetail() {
 
             {bookingError && <div style={{ background:'var(--red-bg)', color:'var(--red)', borderRadius:8, padding:'10px 14px', fontSize:14, marginBottom:12 }}>{bookingError}</div>}
 
-            <button onClick={handleReservation} disabled={bookingLoading} style={{
-              width:'100%', padding:14, fontSize:16, borderRadius:'var(--radius)', border:'none',
-              background:'var(--blue)', color:'white', fontWeight:700, cursor:'pointer',
-            }}>
-              {bookingLoading ? 'Enviando…' : isAuthenticated ? 'Solicitar reserva' : 'Inicia sesión para reservar'}
-            </button>
+            <RequiresVerification message="Para solicitar una reserva necesitas verificar tu email.">
+              <button onClick={handleReservation} disabled={bookingLoading} style={{
+                width:'100%', padding:14, fontSize:16, borderRadius:'var(--radius)', border:'none',
+                background:'var(--blue)', color:'white', fontWeight:700, cursor:'pointer',
+              }}>
+                {bookingLoading ? 'Enviando…' : isAuthenticated ? 'Solicitar reserva' : 'Inicia sesión para reservar'}
+              </button>
+            </RequiresVerification>
             <div style={{ textAlign:'center', fontSize:12, color:'var(--muted)', marginTop:10 }}>
               No se te cobrará hasta que el propietario acepte
             </div>

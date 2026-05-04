@@ -18,16 +18,18 @@ const HABITS = [
 
 function VerificationStatus({ user, docs }) {
   const sp = user?.student_profile
-  const emailOk   = !!user?.email
-  const phoneOk   = !!user?.phone
-  const enrollOk  = sp?.enrollment_verified
-  const dniOk     = docs?.some(d => d.doc_type === 'DNI' && d.status === 'APPROVED')
+  const emailOk    = !!user?.is_verified
+  const phoneOk    = !!user?.phone
+  const enrollOk   = sp?.enrollment_verified
+  const dniOk      = docs?.some(d => d.doc_type === 'DNI' && d.status === 'APPROVED')
+  const contractOk = docs?.some(d => d.doc_type === 'CONTRACT' && d.status === 'APPROVED')
 
   const items = [
-    { label: 'Email verificado',          done: emailOk,  action: null },
-    { label: 'Teléfono verificado',       done: phoneOk,  action: '/panel/configuracion' },
-    { label: 'Carnet universitario',      done: enrollOk, action: '/panel/documentos' },
-    { label: 'Documento de identidad',    done: dniOk,    action: '/panel/documentos' },
+    { label: 'Email verificado',             done: emailOk,    action: null },
+    { label: 'Teléfono verificado',          done: phoneOk,    action: '/panel/configuracion' },
+    { label: 'Carnet universitario',         done: enrollOk,   action: '/panel/documentos' },
+    { label: 'Documento de identidad',       done: dniOk,      action: '/panel/documentos' },
+    { label: 'Contrato de arrendamiento',    done: contractOk, action: '/panel/documentos' },
   ]
   const progress = Math.round((items.filter(i => i.done).length / items.length) * 100)
 

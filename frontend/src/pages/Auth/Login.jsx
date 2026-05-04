@@ -18,6 +18,7 @@ export default function Login() {
   const location = useLocation()
   const [serverError, setServerError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [unverified, setUnverified] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -26,12 +27,18 @@ export default function Login() {
   const onSubmit = async (data) => {
     setIsLoading(true)
     setServerError('')
+    setUnverified(false)
     try {
       const user = await login(data.email, data.password)
       const from = location.state?.from?.pathname
       navigate(from || '/panel', { replace: true })
     } catch (err) {
-      setServerError(err.response?.data?.detail || 'Email o contraseña incorrectos.')
+      if (err.response?.data?.unverified) {
+        setUnverified(true)
+        setServerError(err.response.data.detail)
+      } else {
+        setServerError(err.response?.data?.detail || 'Email o contraseña incorrectos.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -66,8 +73,16 @@ export default function Login() {
             />
 
             {serverError && (
-              <div style={{ background:'var(--red-bg)', color:'var(--red)', borderRadius:8, padding:'10px 14px', fontSize:14, marginBottom:16 }}>
+              <div style={{ background: unverified ? '#EFF6FF' : 'var(--red-bg)', color: unverified ? '#1D4ED8' : 'var(--red)', borderRadius:8, padding:'12px 14px', fontSize:14, marginBottom:16, lineHeight:1.5 }}>
                 {serverError}
+                {unverified && (
+                  <span>
+                    {' '}
+                    <Link to="/verificar-email" style={{ color:'#1D4ED8', fontWeight:700, textDecoration:'underline' }}>
+                      Reenviar enlace de verificación
+                    </Link>
+                  </span>
+                )}
               </div>
             )}
 

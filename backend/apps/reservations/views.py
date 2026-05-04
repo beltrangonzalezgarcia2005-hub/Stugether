@@ -5,13 +5,14 @@ from django.utils import timezone
 from .models import Reservation
 from .serializers import ReservationSerializer, ReservationStatusSerializer
 from django.contrib.auth import get_user_model
+from apps.users.permissions import IsEmailVerified
 
 User = get_user_model()
 
 
 class ReservationListCreateView(generics.ListCreateAPIView):
     serializer_class = ReservationSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsEmailVerified]
 
     def get_queryset(self):
         user = self.request.user
@@ -71,9 +72,14 @@ class ReservationDetailView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         reservation = self.get_object()
-        if reservation.property.owner != self.request.user:
-            raise PermissionDenied("Solo el propietario puede aceptar o rechazar solicitudes.")
         new_status = serializer.validated_data.get('status')
+        is_owner = reservation.property.owner == self.request.user
+        is_student = reservation.student == self.request.user
+
+        if not is_owner:
+            if not (is_student and new_status == Reservation.STATUS_CANCELLED):
+                raise PermissionDenied("Solo el propietario puede aceptar o rechazar solicitudes.")
+
         kwargs = {}
         if new_status == Reservation.STATUS_ACCEPTED:
             kwargs['accepted_at'] = timezone.now()

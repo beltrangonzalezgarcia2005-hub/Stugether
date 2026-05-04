@@ -25,9 +25,13 @@ class OwnerProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'doc_type', 'status', 'uploaded_at', 'reviewed_at')
-    list_filter = ('doc_type', 'status')
+    list_display = ('user', 'user_role', 'doc_type', 'status', 'uploaded_at', 'reviewed_at')
+    list_filter = ('doc_type', 'status', 'user__role')
     search_fields = ('user__email',)
+
+    @admin.display(description='Rol')
+    def user_role(self, obj):
+        return obj.user.role
     actions = ['approve_documents', 'reject_documents']
 
     def approve_documents(self, request, queryset):

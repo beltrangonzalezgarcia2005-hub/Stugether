@@ -24,6 +24,11 @@ import Verification from './pages/Dashboard/Owner/Verification'
 import StudentProfile from './pages/Dashboard/Student/Profile'
 import PublicProfile from './pages/Profile/index'
 import VerifyEmail from './pages/Auth/VerifyEmail'
+import SobreNosotros from './pages/Static/SobreNosotros'
+import Privacidad from './pages/Static/Privacidad'
+import Comisiones from './pages/Static/Comisiones'
+import ComoFunciona from './pages/Static/ComoFunciona'
+import PagoEscrow from './pages/Static/PagoEscrow'
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } })
 
@@ -40,6 +45,11 @@ export default function App() {
             <Route path="/piso/:id" element={<PropertyDetail />} />
             <Route path="/perfil/:id" element={<PublicProfile />} />
             <Route path="/verificar-email" element={<VerifyEmail />} />
+            <Route path="/sobre-nosotros" element={<SobreNosotros />} />
+            <Route path="/privacidad" element={<Privacidad />} />
+            <Route path="/comisiones" element={<Comisiones />} />
+            <Route path="/como-funciona" element={<ComoFunciona />} />
+            <Route path="/pago-escrow" element={<PagoEscrow />} />
 
             <Route path="/panel" element={
               <ProtectedRoute><Dashboard /></ProtectedRoute>

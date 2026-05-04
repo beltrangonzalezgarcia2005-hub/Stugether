@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { verifyEmail, resendVerification } from '../../api/auth'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
+
+const REDIRECT_SECONDS = 5
 
 export default function VerifyEmail() {
   const [params] = useSearchParams()
@@ -16,6 +18,8 @@ export default function VerifyEmail() {
   const [resendEmail, setResendEmail] = useState('')
   const [resendState, setResendState] = useState('idle') // idle | loading | sent | error
   const [resendMsg, setResendMsg]     = useState('')
+  const [countdown, setCountdown] = useState(REDIRECT_SECONDS)
+  const countdownRef = useRef(null)
 
   // Auto-verify when token is in URL
   useEffect(() => {
@@ -25,13 +29,23 @@ export default function VerifyEmail() {
       .then(({ data }) => {
         loginWithTokens(data.access, data.refresh, data.user)
         setState('success')
-        setTimeout(() => navigate('/panel'), 2000)
+        let secs = REDIRECT_SECONDS
+        countdownRef.current = setInterval(() => {
+          secs -= 1
+          setCountdown(secs)
+          if (secs <= 0) {
+            clearInterval(countdownRef.current)
+            navigate('/panel')
+          }
+        }, 1000)
       })
       .catch((err) => {
         setState('error')
         setMessage(err.response?.data?.detail || 'No se pudo verificar el email.')
       })
   }, [token]) // eslint-disable-line
+
+  useEffect(() => () => clearInterval(countdownRef.current), [])
 
   // Pre-fill email from registration
   useEffect(() => {
@@ -68,9 +82,20 @@ export default function VerifyEmail() {
     return (
       <div style={pageStyle}>
         <div style={cardStyle}>
-          <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>¡Cuenta verificada!</h2>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Redirigiendo al panel…</p>
+          <div style={checkCircleStyle}>
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <path d="M8 21L16 29L32 13" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, color: 'var(--foreground)' }}>
+            ¡Email verificado con éxito!
+          </h2>
+          <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+            Tu cuenta está activa. Redirigiendo al panel en <strong style={{ color: 'var(--blue)' }}>{countdown}s</strong>…
+          </p>
+          <Button onClick={() => { clearInterval(countdownRef.current); navigate('/panel') }}>
+            Ir al panel ahora
+          </Button>
         </div>
       </div>
     )
@@ -144,3 +169,4 @@ function ResendForm({ email, setEmail, onSubmit, state, msg }) {
 
 const pageStyle = { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: 24 }
 const cardStyle = { background: 'var(--white)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-md)', padding: '48px 40px', maxWidth: 440, width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }
+const checkCircleStyle = { width: 80, height: 80, borderRadius: '50%', background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: '0 8px 24px rgba(37,99,235,0.3)' }
